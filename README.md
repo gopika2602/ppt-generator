@@ -1,50 +1,37 @@
-# Worship Studio
+# PEACE SLIDES
 
-Responsive worship presentation editor built with React, TypeScript, and Vite. It creates editable 16:9 PowerPoint decks with PptxGenJS and stores projects in the browser's IndexedDB.
+React, TypeScript, and Vite worship presentation app. Quick Mode creates lyric slides and selects a worship theme automatically. Studio Mode provides detailed layout and typography controls. Guests can keep temporary projects in browser IndexedDB; signed-in users store songs, favourites, and preferences in Supabase.
 
-## Run locally
+## Local development
 
 ```sh
 npm install
 npm run dev
 ```
 
-Create a production build with `npm run build`, and serve that build with `npm run preview`.
+Run `npm run build` to create the Vite production build.
 
-## Deploy to Vercel
+## Supabase accounts and cloud storage
 
-This project is configured for Vercel with `npm run build`, the `dist` output directory, and an SPA rewrite to `index.html`. No server environment variables or private API keys are required for the current client-side features.
+1. Create a Supabase project.
+2. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_APP_URL`.
+3. Run `supabase/migrations/202611060001_peace_slides.sql` in the Supabase SQL editor or through the Supabase CLI.
+4. In Supabase Auth URL configuration, set the Site URL to the deployed PEACE SLIDES origin and add local development and production origins to the Redirect URLs allow list. Password reset and email confirmation links return to the app root.
+5. For Vercel, configure the same three public variables for Preview and Production as appropriate. Only the Supabase URL and publishable/anon key are used in the browser. Never use a service-role key in a `VITE_*` variable.
 
-1. Push this project to a GitHub repository.
-2. In Vercel, choose **Add New → Project**, import that repository, and select the `peaceag-ppt-generator` project name if you want the default domain `peaceag-ppt-generator.vercel.app`.
-3. Confirm the build command is `npm run build` and the output directory is `dist` (Vercel can detect Vite automatically).
-4. Deploy. Vercel will build the production branch and create preview deployments for pull requests; future pushes trigger deployments automatically.
-
-The Vercel configuration also rewrites app paths to the SPA entry point, so refreshing a nested path still serves the application. Project data and uploaded images stay in the visitor's browser IndexedDB.
+The migration creates `profiles`, `user_favourites`, `user_preferences`, and `saved_songs`. RLS policies use `auth.uid()` so each signed-in user can only read or change their own rows. Supabase Auth stores and verifies password credentials; this app never stores plaintext passwords. Guest projects remain local and are not automatically uploaded at sign-in.
 
 ## Features
 
-- Original gradient theme library with eight categories, search, and locally saved favourites.
-- Song lyric entry, section label detection, repeated stanza detection, structure review, slide generation, direct slide text editing, slide reordering, duplication, deletion, splitting, and merging.
-- Scripture project type with a reference field and exact text entry.
-- Glass style lyric panels, adjustable panel opacity, text colour, font family, size, and glow.
-- Custom image backgrounds saved with the project in IndexedDB and embedded in PowerPoint exports.
-- Full screen live presentation with keyboard and touch navigation, black screen shortcut, and live fade, dissolve, push, and wipe effects.
-- PPTX export with editable text, embedded image or theme backgrounds, 16:9 sizing, and supported text styling.
-- Autosaved projects, project search, and portable JSON backup and restore.
+- Quick Mode with Tamil/English detection, automatic title preview, section-based slide creation, weighted lyric-aware design selection, a shuffle action, immediate presenting, and PPTX export.
+- Studio Mode with manual themes, custom image backgrounds, typography, lyric panel, glow, slide ordering, transitions, undo/redo, and a full-song lyric editor that regenerates slides.
+- Personal favourite themes, backgrounds, fonts, text colours, and design settings when signed in.
+- PEACE SLIDES watermark as a separate editable layer in preview, live mode, and PPTX files.
+- Full-screen keyboard, touch, and click navigation.
+- The existing IndexedDB database name is retained so local projects created by older versions remain available to guests.
 
-## Notes and limitations
+## Deployment notes
 
-- PowerPoint transitions are not written by the current PptxGenJS version used here. Transition choices apply to browser live mode; exported decks open with the standard PowerPoint slide behavior.
-- Fonts are referenced by name rather than embedded. Install the selected font, including Noto Sans Tamil or another Tamil capable font, on the presentation computer for the closest match. Text remains Unicode and editable in the PPTX.
-- The theme collection is generated from original gradients; uploaded images are embedded. Image crop controls, tonal adjustments, custom theme authoring, and multiple typography profiles are not included yet.
-- The local browser preview could not be opened through the available in-app browser in this environment. The production build succeeded, and a generated Tamil + English deck opened in desktop PowerPoint with editable text visible.
+`vercel.json` routes the Vite single-page app through `index.html`. Supabase account flows require a Supabase project, the migration, allowed redirect URLs, and the environment variables above. Cloud Auth, RLS, cross-device persistence, and recovery emails cannot be exercised until those project-specific settings are configured.
 
-## Structure
-
-```text
-src/
-  engine/   lyric detection, themes, IndexedDB, PPTX export
-  ui/       responsive React interface and styles
-  types.ts  project, section, theme, and slide types
-```
+Themes use the existing image assets in `public/backgrounds` plus the original gradient theme collection. Font files are referenced by family name and are not embedded in the deck; the presentation computer needs fonts that support the lyrics' scripts.

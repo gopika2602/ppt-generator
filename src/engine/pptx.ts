@@ -1,6 +1,6 @@
 import pptxgen from 'pptxgenjs';
 import type { Project } from '../types.ts';
-import { getTheme } from './themes.ts';
+import { getTheme, watermarkColor } from './themes.ts';
 
 function themeBackgroundSvg(themeId: string) {
   const theme = getTheme(themeId);
@@ -13,7 +13,7 @@ function themeBackgroundSvg(themeId: string) {
 export async function exportProject(project: Project) {
   const pptx = new pptxgen();
   pptx.layout = 'LAYOUT_WIDE';
-  pptx.author = 'Worship Studio';
+  pptx.author = 'PEACE SLIDES';
   pptx.subject = project.kind === 'verse' ? 'Scripture presentation' : 'Worship presentation';
   pptx.title = project.title;
   pptx.theme = { headFontFace: project.font, bodyFontFace: project.font };
@@ -39,7 +39,7 @@ export async function exportProject(project: Project) {
     slide.addImage({ data: await getBackground(slideData.themeId || project.themeId), x: 0, y: 0, w: 13.333, h: 7.5 });
     if (project.panel) slide.addShape(pptx.ShapeType.roundRect, { x: 1.05, y: 1.48, w: 11.23, h: 4.54, rectRadius: .12, fill: { color: '10131D', transparency: 100 - project.panelOpacity }, line: { color: 'FFFFFF', transparency: 84, width: .7 } });
     slide.addText(slideData.text, { x: 1.1, y: 1.45, w: 11.13, h: 4.6, fontFace: project.font, fontSize: project.fontSize, color: project.textColor.replace('#', ''), bold: project.bold ?? true, italic: project.italic ?? false, align: project.textAlign || 'center', valign: 'middle', fit: 'shrink', margin: .12, breakLine: false, shadow: project.glow > 0 ? { type: 'outer', color: theme.accent.replace('#', ''), blur: 4, angle: 45, offset: 1, opacity: Math.min(project.glow / 100, .55) } : undefined });
-    if (project.watermarkVisible ?? true) slide.addText('PEACEAG PRESENTATION', { x: 10.05, y: 7.08, w: 2.85, h: .18, fontFace: 'Aptos', fontSize: 8, color: 'FFFFFF', transparency: 100 - (project.watermarkOpacity ?? 40), charSpacing: 2, align: 'right', valign: 'middle', margin: 0, breakLine: false, fit: 'shrink' });
+    if (project.watermarkVisible ?? true) slide.addText('PEACE SLIDES', { x: 10.05, y: 7.08, w: 2.85, h: .18, fontFace: 'Aptos', fontSize: 8, color: watermarkColor(theme.id).replace('#',''), transparency: 100 - (project.watermarkOpacity ?? 40), charSpacing: 2, align: 'right', valign: 'middle', margin: 0, breakLine: false, fit: 'shrink' });
   }
   const safeName = project.title.replace(/[\\/:*?"<>|]/g, '-').trim() || 'Worship';
   await pptx.writeFile({ fileName: `${safeName}.pptx` });

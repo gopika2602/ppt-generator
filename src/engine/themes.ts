@@ -34,3 +34,4 @@ make('christmas-star','Star of Bethlehem','Christmas Glory','linear-gradient(145
 make('christmas-min','Noel','Christmas Glory','linear-gradient(135deg,#182738,#263c48 55%,#79534a)','#f1d29b','Minimal')
 ];
 export const getTheme=(id:string)=>themes.find(t=>t.id===id)||themes[0];
+export const watermarkColor=(themeId:string)=>{const theme=getTheme(themeId);const colors=theme.background.match(/#[0-9a-f]{6}/gi)||[];if(!colors.length)return theme.text||'#fffaf0';const luminance=colors.map(color=>{const r=parseInt(color.slice(1,3),16),g=parseInt(color.slice(3,5),16),b=parseInt(color.slice(5,7),16);return .2126*r+.7152*g+.0722*b}).reduce((a,b)=>a+b,0)/colors.length;return luminance>155?'#22242a':theme.text||'#fffaf0'};
